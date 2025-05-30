@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name="/users")
+@WebServlet("/users")
 public class UsersServlet extends HttpServlet {
     
     UsersDAO usersDAO = new UsersDAO();
