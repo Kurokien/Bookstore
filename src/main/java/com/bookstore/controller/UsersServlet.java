@@ -26,7 +26,7 @@ public class UsersServlet extends HttpServlet {
         String command = request.getParameter("command");
         if("logout".equals(command)) {
             request.getSession().removeAttribute("user");
-            response.sendRedirect("/shop/");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
     

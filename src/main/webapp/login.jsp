@@ -12,7 +12,7 @@
             <div class="container">
                 <div class="account">
                     <h2 class="account-in">Login</h2>
-                    <form action="UsersServlet" method="POST">
+                    <form action="<%= request.getContextPath()%>/users" method="POST">
                         <%if(request.getParameter("error")!=null){%>
                         <div>
                             <p style="color:red"><%=request.getParameter("error")%></p>

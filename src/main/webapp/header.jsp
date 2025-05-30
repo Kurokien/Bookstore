@@ -56,7 +56,7 @@
                         <ul class="icon1 sub-icon1">
                             <%if (users != null) {%>
                             <li><a><%=users.getUserEmail()%></a> </li>
-                            <li><a href="<%= request.getContextPath() %>/UsersServlet?command=logout">LOGOUT</a> </li>
+                            <li><a href="<%= request.getContextPath()%>/users?command=logout">LOGOUT</a> </li>
                                 <%}%>
                             <%if (users == null) {%>
                                 <li><a href="<%= request.getContextPath() %>/login.jsp">LOGIN</a> </li>
