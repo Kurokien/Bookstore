@@ -16,7 +16,8 @@
         <li><a href="${root}/shop/admin/index.jsp">Trang chủ</a></li>
         <li><a href="${root}/shop/admin/manager_category.jsp">Danh mục</a></li>
         <li><a href="${root}/shop/admin/manager_product.jsp">Sản phẩm</a></li>
-        <li><a href="${root}/shop/admin/manager_bill.jsp">Hóa đơn</a></li>
+        <li><a href="${root}/shop/admin/manager_bill.jsp">Hóa đơn</a></li>  
+        <li><a href="${root}/shop/LogoutServlet" onclick="confirmLogout()" style="color: #ff4757;">Đăng xuất</a></li>
     </ul>
 </div>
 

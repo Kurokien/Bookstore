@@ -7,6 +7,26 @@
     <display-name>BookStore Web Application</display-name>
     
     <!-- Servlet Mappings -->
+     <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/LoginServlet</url-pattern>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/LogoutServlet</url-pattern>
+        <url-pattern>/logout</url-pattern>
+        <url-pattern>/admin/logout</url-pattern>
+    </servlet-mapping>
     <servlet>
         <servlet-name>ChartServlet</servlet-name>
         <servlet-class>com.bookstore.controller.ChartServlet</servlet-class>

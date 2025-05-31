@@ -8,7 +8,7 @@
     <body>
 
         <div id="footer">
-            © Copyright 2018 Book Store, All rights reserved.
+            © Copyright 2025 Book Store, All rights reserved.
         </div>
 
     </body>
