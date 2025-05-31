@@ -13,7 +13,6 @@
 
         <c:set var="root" value="${pageContext.request.contextPath}"/>
         <link href="${root}/css/mos-style.css" rel='stylesheet' type='text/css' />
-        <script src="<c:url value="/ckeditor/ckeditor.js" />"></script>
 
     </head>
     <body>

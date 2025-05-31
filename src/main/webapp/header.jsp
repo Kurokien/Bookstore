@@ -39,7 +39,7 @@
         
         String q = "";
         if(request.getParameter("q") != null) {
-            request.getParameter("q");
+            q = request.getParameter("q");
         }
 
     %>
@@ -55,15 +55,22 @@
                     <div class="header-in" style="margin-top: 20px;">
                         <ul class="icon1 sub-icon1">
                             <%if (users != null) {%>
-                            <li><a><%=users.getUserEmail()%></a> </li>
-                            <li><a href="<%= request.getContextPath()%>/users?command=logout">LOGOUT</a> </li>
+                            <li>
+                                <a title="<%=users.getUserEmail()%>" style="color: #007cba; font-weight: bold;">
+                                    <%if (users.getUserFullname() != null && !users.getUserFullname().trim().isEmpty()) {%>
+                                        👋 Hi, <%=users.getFirstName()%>!
+                                    <%} else {%>
+                                        👤 <%=users.getUserEmail()%>
+                                    <%}%>
+                                </a>
+                            </li>
+                            <li><a href="<%= request.getContextPath()%>/users?command=logout" style="color: white;">LOGOUT</a></li>
                                 <%}%>
                             <%if (users == null) {%>
-                                <li><a href="<%= request.getContextPath() %>/login.jsp">LOGIN</a> </li>
-
-                                <li><a href="<%= request.getContextPath() %>/register.jsp">REGISTER</a> </li>
+                                <li><a href="<%= request.getContextPath() %>/login.jsp">LOGIN</a></li>
+                                <li><a href="<%= request.getContextPath() %>/register.jsp">REGISTER</a></li>
                             <%}%>
-                            <li><a href="<%= request.getContextPath() %>/checkout.jsp">CHECKOUT</a> </li
+                            <li><a href="<%= request.getContextPath() %>/checkout.jsp">CHECKOUT</a></li>
                             <li><div class="cart">
                                     <a href="#" class="cart-in"> </a>
                                     <span> <%=cart.countItem()%></span>
@@ -113,11 +120,15 @@
                     <ul class="nav">
                         <li class="active"><a href="index.jsp"><i> </i>Home</a></li>
                         <%
-                            for (Category c : categoryDAO.getListCategory()) {
+                            try {
+                                for (Category c : categoryDAO.getListCategory()) {
                         %>
                         <li><a href="product.jsp?categoryID=<%=c.getCategoryID()%>&pages=1"><%=c.getCategoryName()%></a></li>
                             <%
                                 }
+                            } catch (Exception e) {
+                                System.out.println("Error loading categories: " + e.getMessage());
+                            }
                             %>
                         </li> 						
                         <li><a href="aboutus.jsp" >About us</a></li>            
@@ -134,8 +145,8 @@
                 <div class="header-bottom-on">
                     <div class="header-can">
                         <div class="search">
-                            <form action="<%= request.getContextPath() %>/shop/index.jsp" method="GET">
-                                <input type="text" name="q" value="<%=q%>"/>
+                            <form action="<%= request.getContextPath() %>/index.jsp" method="GET">
+                                <input type="text" name="q" value="<%=q%>" placeholder="Search books..."/>
                                 <input type="submit" value="">
                             </form>
                         </div>

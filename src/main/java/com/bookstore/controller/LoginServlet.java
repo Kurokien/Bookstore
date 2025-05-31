@@ -15,21 +15,16 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet", "/login"})
 public class LoginServlet extends HttpServlet {
 
+    private final UsersDAO usersDAO = new UsersDAO();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         response.setContentType("text/html;charset=UTF-8");
         
-        // Test servlet đang hoạt động
-        response.getWriter().println("<h1>LoginServlet is working!</h1>");
-        response.getWriter().println("<p>Available actions:</p>");
-        response.getWriter().println("<ul>");
-        response.getWriter().println("<li><a href='" + request.getContextPath() + "/admin/login.jsp'>Admin Login</a></li>");
-        response.getWriter().println("<li><a href='" + request.getContextPath() + "/login.jsp'>Customer Login</a></li>");
-        response.getWriter().println("</ul>");
-        
-        System.out.println("LoginServlet GET accessed at: " + new java.util.Date());
+        // Redirect to login page
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
     }
 
     @Override
@@ -37,6 +32,7 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         
         response.setContentType("text/html;charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
         
         String action = request.getParameter("action");
         System.out.println("LoginServlet POST - Action: " + action);
@@ -46,11 +42,96 @@ public class LoginServlet extends HttpServlet {
         } else if ("customer_login".equals(action)) {
             handleCustomerLogin(request, response);
         } else {
-            // Default: chuyển về admin login
-            response.sendRedirect(request.getContextPath() + "/admin/login.jsp");
+            // Default: general login (auto-detect role)
+            handleGeneralLogin(request, response);
         }
     }
     
+    /**
+     * Handle general login - auto-detect if user is admin or customer
+     */
+    private void handleGeneralLogin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String email = request.getParameter("email");
+        String password = request.getParameter("pass"); // From login form
+        String rememberMe = request.getParameter("rememberMe");
+        
+        System.out.println("General login attempt - Email: " + email);
+        
+        try {
+            // Validate input
+            if (email == null || password == null || email.trim().isEmpty() || password.trim().isEmpty()) {
+                System.out.println("Empty fields detected");
+                redirectToLoginWithError(request, response, "Email and password are required", email);
+                return;
+            }
+            
+            // Validate email format
+            if (!isValidEmail(email.trim())) {
+                System.out.println("Invalid email format: " + email);
+                redirectToLoginWithError(request, response, "Invalid email format", email);
+                return;
+            }
+            
+            // Hash password
+            String hashedPassword = md5Hash(password);
+            System.out.println("Password hashed for user: " + email);
+            
+            // Check login
+            Users user = usersDAO.getUserByEmailAndPassword(email.trim(), hashedPassword);
+            
+            if (user != null) {
+                // Login successful
+                HttpSession session = request.getSession();
+                session.setAttribute("user", user);
+                session.setAttribute("isLoggedIn", true);
+                
+                if (user.isUserRole()) {
+                    // Admin user
+                    session.setAttribute("admin", user);
+                    session.setAttribute("userRole", "admin");
+                    session.setAttribute("userName", user.getDisplayName());
+                    session.setAttribute("userId", user.getUserID());
+                    
+                    System.out.println("Admin logged in: " + user.getUserEmail() + " at " + new java.util.Date());
+                    response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
+                    
+                } else {
+                    // Customer user
+                    session.setAttribute("customer", user);
+                    session.setAttribute("userRole", "customer");
+                    session.setAttribute("userName", user.getDisplayName());
+                    session.setAttribute("userId", user.getUserID());
+                    
+                    System.out.println("Customer logged in: " + user.getUserEmail() + " at " + new java.util.Date());
+                    
+                    // Check if there's a redirect URL
+                    String redirectURL = (String) session.getAttribute("redirectURL");
+                    if (redirectURL != null && !redirectURL.isEmpty()) {
+                        session.removeAttribute("redirectURL");
+                        response.sendRedirect(redirectURL);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/index.jsp");
+                    }
+                }
+                
+            } else {
+                // Login failed
+                System.out.println("Login failed for email: " + email);
+                redirectToLoginWithError(request, response, "Invalid email or password", email);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Exception during login: " + e.getMessage());
+            redirectToLoginWithError(request, response, "An error occurred during login. Please try again.", email);
+        }
+    }
+    
+    /**
+     * Handle admin-specific login
+     */
     private void handleAdminLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -67,32 +148,29 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
             
-            // Mã hóa password bằng MD5
+            // Hash password
             String hashedPassword = md5Hash(password);
             System.out.println("Password hashed: " + hashedPassword);
             
-            // Kiểm tra đăng nhập
-            UsersDAO userDAO = new UsersDAO();
-            Users user = userDAO.getUserByEmailAndPassword(email.trim(), hashedPassword);
+            // Check login
+            Users user = usersDAO.getUserByEmailAndPassword(email.trim(), hashedPassword);
             
-            if (user != null && user.isUserRole()) { // isUserRole() = true có nghĩa là admin
-                // Đăng nhập thành công
+            if (user != null && user.isUserRole()) { // Must be admin
+                // Admin login successful
                 HttpSession session = request.getSession();
                 session.setAttribute("admin", user);
+                session.setAttribute("user", user);
                 session.setAttribute("isLoggedIn", true);
                 session.setAttribute("userRole", "admin");
-                session.setAttribute("userName", user.getUserEmail());
+                session.setAttribute("userName", user.getDisplayName());
                 session.setAttribute("userId", user.getUserID());
                 
-                // Log thông tin đăng nhập
                 System.out.println("Admin logged in: " + user.getUserEmail() + " at " + new java.util.Date());
-                
-                // Chuyển hướng đến trang admin
                 response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
                 
             } else {
-                // Đăng nhập thất bại
-                System.out.println("Login failed for email: " + email);
+                // Admin login failed
+                System.out.println("Admin login failed for email: " + email);
                 response.sendRedirect(request.getContextPath() + "/admin/login.jsp?error=invalid&email=" + email);
             }
             
@@ -102,6 +180,9 @@ public class LoginServlet extends HttpServlet {
         }
     }
     
+    /**
+     * Handle customer-specific login
+     */
     private void handleCustomerLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -113,46 +194,65 @@ public class LoginServlet extends HttpServlet {
         try {
             // Validate input
             if (email == null || password == null || email.trim().isEmpty() || password.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/login.jsp?error=empty_fields");
+                redirectToLoginWithError(request, response, "Email and password are required", email);
                 return;
             }
             
-            // Mã hóa password
+            // Hash password
             String hashedPassword = md5Hash(password);
             
-            // Kiểm tra đăng nhập
-            UsersDAO userDAO = new UsersDAO();
-            Users user = userDAO.getUserByEmailAndPassword(email.trim(), hashedPassword);
+            // Check login
+            Users user = usersDAO.getUserByEmailAndPassword(email.trim(), hashedPassword);
             
-            if (user != null && !user.isUserRole()) { // isUserRole() = false nghĩa là customer
-                // Đăng nhập thành công
+            if (user != null && !user.isUserRole()) { // Must be customer
+                // Customer login successful
                 HttpSession session = request.getSession();
                 session.setAttribute("customer", user);
+                session.setAttribute("user", user);
                 session.setAttribute("isLoggedIn", true);
                 session.setAttribute("userRole", "customer");
-                session.setAttribute("userName", user.getUserEmail());
+                session.setAttribute("userName", user.getDisplayName());
                 session.setAttribute("userId", user.getUserID());
                 
-                // Log thông tin đăng nhập
                 System.out.println("Customer logged in: " + user.getUserEmail() + " at " + new java.util.Date());
-                
-                // Chuyển hướng về trang chủ
                 response.sendRedirect(request.getContextPath() + "/index.jsp");
                 
             } else {
-                // Đăng nhập thất bại
+                // Customer login failed
                 System.out.println("Customer login failed for email: " + email);
-                response.sendRedirect(request.getContextPath() + "/login.jsp?error=invalid&email=" + email);
+                redirectToLoginWithError(request, response, "Invalid email or password", email);
             }
             
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/login.jsp?error=system_error");
+            redirectToLoginWithError(request, response, "An error occurred during login. Please try again.", email);
         }
     }
     
     /**
-     * Mã hóa password bằng MD5
+     * Redirect to login page with error message
+     */
+    private void redirectToLoginWithError(HttpServletRequest request, HttpServletResponse response, 
+                                        String errorMessage, String email) throws IOException {
+        String encodedError = java.net.URLEncoder.encode(errorMessage, "UTF-8");
+        String encodedEmail = email != null ? java.net.URLEncoder.encode(email, "UTF-8") : "";
+        
+        response.sendRedirect(request.getContextPath() + "/login.jsp?error=" + encodedError + 
+                            (email != null ? "&email=" + encodedEmail : ""));
+    }
+    
+    /**
+     * Validate email format
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    }
+    
+    /**
+     * MD5 hash function
      */
     private String md5Hash(String input) {
         try {
@@ -176,6 +276,6 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Login Servlet for Admin and Customer";
+        return "Enhanced Login Servlet for Admin and Customer with Email Authentication";
     }
 }

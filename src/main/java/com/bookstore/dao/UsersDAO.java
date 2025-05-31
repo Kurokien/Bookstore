@@ -14,86 +14,117 @@ public class UsersDAO {
     
     private static final Logger logger = Logger.getLogger(UsersDAO.class.getName());
 
-    // ==================== ORIGINAL CLIENT METHODS (UNCHANGED) ====================
+    // ==================== ORIGINAL CLIENT METHODS (UPDATED) ====================
     
     // check email
     public boolean checkEmail(String email) {
-        Connection connection = DBConnect.getConnection();
-        String sql = "SELECT * FROM users WHERE user_email = '" + email + "'";
-        PreparedStatement ps;
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
         try {
-            ps = connection.prepareCall(sql);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                connection.close();
-                return true;
-            }
+            connection = DBConnect.getConnection();
+            String sql = "SELECT user_id FROM users WHERE user_email = ?";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, email);
+            rs = ps.executeQuery();
+            return rs.next(); // true if email exists
         } catch (SQLException ex) {
-            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe("Error checking email: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            closeResources(rs, ps, connection);
         }
         return false;
     }
     
-    // add account method
-    public boolean insertUser(Users u) {
-        Connection connection = DBConnect.getConnection();
-        String sql = "INSERT INTO users VALUES(?,?,?,?)";
+    // add account method (UPDATED for new fields)
+    public boolean insertUser(Users user) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        
         try {
-            PreparedStatement ps = connection.prepareCall(sql);
-            ps.setLong(1, u.getUserID());
-            ps.setString(2, u.getUserEmail());
-            ps.setString(3, u.getUserPass());
-            ps.setBoolean(4, u.isUserRole());
-            ps.executeUpdate();
-            return true;
+            connection = DBConnect.getConnection();
+            String sql = "INSERT INTO users (user_id, user_email, user_fullname, user_phone, " +
+                        "user_address, user_country, user_pass, user_role) VALUES (?,?,?,?,?,?,?,?)";
+            
+            ps = connection.prepareStatement(sql);
+            ps.setLong(1, user.getUserID());
+            ps.setString(2, user.getUserEmail());
+            ps.setString(3, user.getUserFullname());
+            ps.setString(4, user.getUserPhone());
+            ps.setString(5, user.getUserAddress());
+            ps.setString(6, user.getUserCountry());
+            ps.setString(7, user.getUserPass());
+            ps.setBoolean(8, user.isUserRole());
+            
+            int result = ps.executeUpdate();
+            logger.info("User inserted successfully: " + user.getUserEmail());
+            return result > 0;
+            
         } catch (SQLException ex) {
-            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe("Error inserting user: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            closeResources(null, ps, connection);
         }
         return false;
     }
     
-    // check login
+    // check login (UPDATED for new fields)
     public Users login(String email, String password) {
-        Connection con = DBConnect.getConnection();
-        String sql = "select * from users where user_email='" + email + "' and user_pass='" + password + "'";
-        PreparedStatement ps;
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
         try {
-            ps = (PreparedStatement) con.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            connection = DBConnect.getConnection();
+            String sql = "SELECT * FROM users WHERE user_email = ? AND user_pass = ?";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, email);
+            ps.setString(2, password);
+            rs = ps.executeQuery();
+            
             if (rs.next()) {
-                Users u = new Users();
-                u.setUserID(rs.getLong("user_id"));
-                u.setUserEmail(rs.getString("user_email"));
-                u.setUserPass(rs.getString("user_pass"));
-                u.setUserRole(rs.getBoolean("user_role"));
-                con.close();
-                return u;
+                Users user = mapResultSetToUser(rs);
+                logger.info("User login successful: " + email);
+                return user;
             }
         } catch (SQLException e) {
+            logger.severe("Error during login: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            closeResources(rs, ps, connection);
         }
         return null;
     }
     
+    // get user by ID (UPDATED for new fields)
     public Users getUser(long userID) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
         try {
-            Connection connection = DBConnect.getConnection();
+            connection = DBConnect.getConnection();
             String sql = "SELECT * FROM users WHERE user_id = ?";
-            PreparedStatement ps = connection.prepareCall(sql);
+            ps = connection.prepareStatement(sql);
             ps.setLong(1, userID);
-            ResultSet rs = ps.executeQuery();
-            Users u = new Users();
-            while (rs.next()) {
-                u.setUserEmail(rs.getString("user_email"));
+            rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToUser(rs);
             }
-            return u;
         } catch (SQLException ex) {
-            Logger.getLogger(UsersDAO.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe("Error getting user by ID: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            closeResources(rs, ps, connection);
         }
         return null;
     }
 
-    // ==================== NEW ADMIN METHODS (ADDED) ====================
+    // ==================== ENHANCED ADMIN METHODS ====================
 
     /**
      * Get user by email and password (For admin authentication)
@@ -117,12 +148,7 @@ public class UsersDAO {
             rs = ps.executeQuery();
             
             if (rs.next()) {
-                Users user = new Users();
-                user.setUserID(rs.getLong("user_id"));
-                user.setUserEmail(rs.getString("user_email"));
-                user.setUserPass(rs.getString("user_pass"));
-                user.setUserRole(rs.getBoolean("user_role"));
-                
+                Users user = mapResultSetToUser(rs);
                 logger.info("User found: " + email + ", Role: " + (user.isUserRole() ? "Admin" : "Customer"));
                 return user;
             } else {
@@ -140,9 +166,9 @@ public class UsersDAO {
     }
 
     /**
-     * Get user by ID (Enhanced version for admin)
+     * Get user by email only
      */
-    public Users getUserById(long userId) {
+    public Users getUserByEmail(String email) {
         Connection connection = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -154,22 +180,17 @@ public class UsersDAO {
                 return null;
             }
             
-            String sql = "SELECT * FROM users WHERE user_id = ?";
+            String sql = "SELECT * FROM users WHERE user_email = ?";
             ps = connection.prepareStatement(sql);
-            ps.setLong(1, userId);
+            ps.setString(1, email);
             rs = ps.executeQuery();
             
             if (rs.next()) {
-                Users user = new Users();
-                user.setUserID(rs.getLong("user_id"));
-                user.setUserEmail(rs.getString("user_email"));
-                user.setUserPass(rs.getString("user_pass"));
-                user.setUserRole(rs.getBoolean("user_role"));
-                return user;
+                return mapResultSetToUser(rs);
             }
             
         } catch (SQLException e) {
-            logger.severe("Error getting user by ID: " + e.getMessage());
+            logger.severe("Error getting user by email: " + e.getMessage());
             e.printStackTrace();
         } finally {
             closeResources(rs, ps, connection);
@@ -228,16 +249,12 @@ public class UsersDAO {
                 return userList;
             }
             
-            String sql = "SELECT * FROM users ORDER BY user_id";
+            String sql = "SELECT * FROM users ORDER BY created_at DESC";
             ps = connection.prepareStatement(sql);
             rs = ps.executeQuery();
             
             while (rs.next()) {
-                Users user = new Users();
-                user.setUserID(rs.getLong("user_id"));
-                user.setUserEmail(rs.getString("user_email"));
-                user.setUserPass(rs.getString("user_pass"));
-                user.setUserRole(rs.getBoolean("user_role"));
+                Users user = mapResultSetToUser(rs);
                 userList.add(user);
             }
             
@@ -267,16 +284,12 @@ public class UsersDAO {
                 return customerList;
             }
             
-            String sql = "SELECT * FROM users WHERE user_role = false ORDER BY user_id";
+            String sql = "SELECT * FROM users WHERE user_role = false ORDER BY created_at DESC";
             ps = connection.prepareStatement(sql);
             rs = ps.executeQuery();
             
             while (rs.next()) {
-                Users user = new Users();
-                user.setUserID(rs.getLong("user_id"));
-                user.setUserEmail(rs.getString("user_email"));
-                user.setUserPass(rs.getString("user_pass"));
-                user.setUserRole(rs.getBoolean("user_role"));
+                Users user = mapResultSetToUser(rs);
                 customerList.add(user);
             }
             
@@ -304,18 +317,94 @@ public class UsersDAO {
                 return false;
             }
             
-            String sql = "UPDATE users SET user_email = ?, user_pass = ?, user_role = ? WHERE user_id = ?";
+            String sql = "UPDATE users SET user_email = ?, user_fullname = ?, user_phone = ?, " +
+                        "user_address = ?, user_country = ?, user_pass = ?, user_role = ? " +
+                        "WHERE user_id = ?";
+            
             ps = connection.prepareStatement(sql);
             ps.setString(1, user.getUserEmail());
-            ps.setString(2, user.getUserPass());
-            ps.setBoolean(3, user.isUserRole());
-            ps.setLong(4, user.getUserID());
+            ps.setString(2, user.getUserFullname());
+            ps.setString(3, user.getUserPhone());
+            ps.setString(4, user.getUserAddress());
+            ps.setString(5, user.getUserCountry());
+            ps.setString(6, user.getUserPass());
+            ps.setBoolean(7, user.isUserRole());
+            ps.setLong(8, user.getUserID());
             
             int result = ps.executeUpdate();
             return result == 1;
             
         } catch (SQLException e) {
             logger.severe("Error updating user: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, connection);
+        }
+        
+        return false;
+    }
+
+    /**
+     * Update user profile (without password and role)
+     */
+    public boolean updateUserProfile(Users user) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        
+        try {
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                logger.severe("Cannot establish database connection for profile update");
+                return false;
+            }
+            
+            String sql = "UPDATE users SET user_fullname = ?, user_phone = ?, " +
+                        "user_address = ?, user_country = ? WHERE user_id = ?";
+            
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, user.getUserFullname());
+            ps.setString(2, user.getUserPhone());
+            ps.setString(3, user.getUserAddress());
+            ps.setString(4, user.getUserCountry());
+            ps.setLong(5, user.getUserID());
+            
+            int result = ps.executeUpdate();
+            return result == 1;
+            
+        } catch (SQLException e) {
+            logger.severe("Error updating user profile: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, connection);
+        }
+        
+        return false;
+    }
+
+    /**
+     * Change user password
+     */
+    public boolean changePassword(long userId, String newHashedPassword) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        
+        try {
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                logger.severe("Cannot establish database connection for password change");
+                return false;
+            }
+            
+            String sql = "UPDATE users SET user_pass = ? WHERE user_id = ?";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, newHashedPassword);
+            ps.setLong(2, userId);
+            
+            int result = ps.executeUpdate();
+            return result == 1;
+            
+        } catch (SQLException e) {
+            logger.severe("Error changing password: " + e.getMessage());
             e.printStackTrace();
         } finally {
             closeResources(null, ps, connection);
@@ -424,6 +513,31 @@ public class UsersDAO {
     // ==================== UTILITY METHODS ====================
 
     /**
+     * Map ResultSet to Users object
+     */
+    private Users mapResultSetToUser(ResultSet rs) throws SQLException {
+        Users user = new Users();
+        user.setUserID(rs.getLong("user_id"));
+        user.setUserEmail(rs.getString("user_email"));
+        user.setUserFullname(rs.getString("user_fullname"));
+        user.setUserPhone(rs.getString("user_phone"));
+        user.setUserAddress(rs.getString("user_address"));
+        user.setUserCountry(rs.getString("user_country"));
+        user.setUserPass(rs.getString("user_pass"));
+        user.setUserRole(rs.getBoolean("user_role"));
+        
+        // Handle timestamps (might be null if columns don't exist yet)
+        try {
+            user.setCreatedAt(rs.getTimestamp("created_at"));
+            user.setUpdatedAt(rs.getTimestamp("updated_at"));
+        } catch (SQLException e) {
+            // Ignore if columns don't exist yet
+        }
+        
+        return user;
+    }
+
+    /**
      * Close database resources safely
      */
     private void closeResources(ResultSet rs, PreparedStatement ps, Connection connection) {
@@ -443,21 +557,19 @@ public class UsersDAO {
         UsersDAO dao = new UsersDAO();
         System.out.println("Testing UsersDAO...");
         
-        // Test admin login (password: admin123 -> MD5: 0192023a7bbd73250516f069df18b500)
-        Users admin = dao.getUserByEmailAndPassword("admin@bookstore.com", "0192023a7bbd73250516f069df18b500");
-        if (admin != null) {
-            System.out.println("✅ Admin found: " + admin.getUserEmail());
-            System.out.println("✅ Is admin: " + admin.isUserRole());
-        } else {
-            System.out.println("❌ Admin not found!");
-        }
-        
-        // Test original client methods
+        // Test email check
         boolean emailExists = dao.checkEmail("admin@bookstore.com");
-        System.out.println("📧 Admin email exists (original method): " + emailExists);
+        System.out.println("📧 Admin email exists: " + emailExists);
         
         // Test admin methods
         System.out.println("📊 Total users: " + dao.getTotalUsers());
         System.out.println("📊 Total customers: " + dao.getTotalCustomers());
+        
+        // Test get all customers
+        ArrayList<Users> customers = dao.getAllCustomers();
+        System.out.println("👥 Customer list size: " + customers.size());
+        for (Users customer : customers) {
+            System.out.println("   - " + customer.getDisplayName() + " (" + customer.getUserEmail() + ")");
+        }
     }
 }

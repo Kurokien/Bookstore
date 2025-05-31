@@ -1,5 +1,6 @@
 package com.bookstore.model;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 public class Users {
@@ -7,8 +8,14 @@ public class Users {
     // ==================== FIELDS ====================
     private long userID;
     private String userEmail;
+    private String userFullname;
+    private String userPhone;
+    private String userAddress;
+    private String userCountry;
     private String userPass;
     private boolean userRole; // true = admin, false = customer
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
     
     // ==================== CONSTRUCTORS ====================
     
@@ -21,27 +28,28 @@ public class Users {
     /**
      * Constructor with all fields
      */
-    public Users(long userID, String userEmail, String userPass, boolean userRole) {
+    public Users(long userID, String userEmail, String userFullname, String userPhone, 
+                String userAddress, String userCountry, String userPass, boolean userRole) {
         this.userID = userID;
         this.userEmail = userEmail;
+        this.userFullname = userFullname;
+        this.userPhone = userPhone;
+        this.userAddress = userAddress;
+        this.userCountry = userCountry;
         this.userPass = userPass;
         this.userRole = userRole;
     }
 
     /**
-     * Constructor without ID (for new users)
+     * Constructor for registration (userRole = false by default)
      */
-    public Users(String userEmail, String userPass, boolean userRole) {
+    public Users(String userEmail, String userFullname, String userPhone, 
+                String userAddress, String userCountry, String userPass) {
         this.userEmail = userEmail;
-        this.userPass = userPass;
-        this.userRole = userRole;
-    }
-
-    /**
-     * Constructor for customer registration (userRole = false by default)
-     */
-    public Users(String userEmail, String userPass) {
-        this.userEmail = userEmail;
+        this.userFullname = userFullname;
+        this.userPhone = userPhone;
+        this.userAddress = userAddress;
+        this.userCountry = userCountry;
         this.userPass = userPass;
         this.userRole = false; // Default to customer
     }
@@ -64,6 +72,38 @@ public class Users {
         this.userEmail = userEmail;
     }
 
+    public String getUserFullname() {
+        return userFullname;
+    }
+
+    public void setUserFullname(String userFullname) {
+        this.userFullname = userFullname;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
+
+    public String getUserAddress() {
+        return userAddress;
+    }
+
+    public void setUserAddress(String userAddress) {
+        this.userAddress = userAddress;
+    }
+
+    public String getUserCountry() {
+        return userCountry;
+    }
+
+    public void setUserCountry(String userCountry) {
+        this.userCountry = userCountry;
+    }
+
     public String getUserPass() {
         return userPass;
     }
@@ -78,6 +118,22 @@ public class Users {
 
     public void setUserRole(boolean userRole) {
         this.userRole = userRole;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     // ==================== HELPER METHODS ====================
@@ -104,9 +160,12 @@ public class Users {
     }
 
     /**
-     * Get display name (email prefix)
+     * Get display name (fullname if available, otherwise email prefix)
      */
     public String getDisplayName() {
+        if (userFullname != null && !userFullname.trim().isEmpty()) {
+            return userFullname;
+        }
         if (userEmail != null && userEmail.contains("@")) {
             return userEmail.substring(0, userEmail.indexOf("@"));
         }
@@ -114,18 +173,50 @@ public class Users {
     }
 
     /**
+     * Get first name from fullname
+     */
+    public String getFirstName() {
+        if (userFullname != null && !userFullname.trim().isEmpty()) {
+            String[] names = userFullname.trim().split("\\s+");
+            return names[0];
+        }
+        return getDisplayName();
+    }
+
+    /**
+     * Get last name from fullname
+     */
+    public String getLastName() {
+        if (userFullname != null && !userFullname.trim().isEmpty()) {
+            String[] names = userFullname.trim().split("\\s+");
+            if (names.length > 1) {
+                return names[names.length - 1];
+            }
+        }
+        return "";
+    }
+
+    /**
      * Get user initials for avatar
      */
     public String getInitials() {
-        if (userEmail != null && !userEmail.isEmpty()) {
-            String[] parts = userEmail.split("[@\\.]");
-            if (parts.length >= 1) {
-                String name = parts[0];
-                if (name.length() >= 2) {
-                    return (name.charAt(0) + "" + name.charAt(1)).toUpperCase();
-                } else if (name.length() == 1) {
-                    return name.toUpperCase();
+        if (userFullname != null && !userFullname.trim().isEmpty()) {
+            String[] names = userFullname.trim().split("\\s+");
+            StringBuilder initials = new StringBuilder();
+            for (int i = 0; i < Math.min(2, names.length); i++) {
+                if (!names[i].isEmpty()) {
+                    initials.append(names[i].charAt(0));
                 }
+            }
+            return initials.toString().toUpperCase();
+        }
+        
+        if (userEmail != null && !userEmail.isEmpty()) {
+            String name = userEmail.split("@")[0];
+            if (name.length() >= 2) {
+                return (name.charAt(0) + "" + name.charAt(1)).toUpperCase();
+            } else if (name.length() == 1) {
+                return name.toUpperCase();
             }
         }
         return "U";
@@ -142,6 +233,17 @@ public class Users {
     }
 
     /**
+     * Validate phone number format
+     */
+    public boolean isValidPhone() {
+        if (userPhone == null || userPhone.trim().isEmpty()) {
+            return true; // Phone is optional
+        }
+        // Basic phone validation (can be enhanced)
+        return userPhone.matches("^[\\+]?[0-9\\s\\-\\(\\)]{10,20}$");
+    }
+
+    /**
      * Check if password is strong
      */
     public boolean isStrongPassword() {
@@ -153,14 +255,29 @@ public class Users {
     }
 
     /**
+     * Check if all required fields are filled
+     */
+    public boolean hasRequiredFields() {
+        return userEmail != null && !userEmail.trim().isEmpty() &&
+               userPass != null && !userPass.trim().isEmpty() &&
+               userFullname != null && !userFullname.trim().isEmpty();
+    }
+
+    /**
      * Create a safe copy without password
      */
     public Users createSafeCopy() {
         Users safeCopy = new Users();
         safeCopy.setUserID(this.userID);
         safeCopy.setUserEmail(this.userEmail);
+        safeCopy.setUserFullname(this.userFullname);
+        safeCopy.setUserPhone(this.userPhone);
+        safeCopy.setUserAddress(this.userAddress);
+        safeCopy.setUserCountry(this.userCountry);
         safeCopy.setUserPass("***HIDDEN***");
         safeCopy.setUserRole(this.userRole);
+        safeCopy.setCreatedAt(this.createdAt);
+        safeCopy.setUpdatedAt(this.updatedAt);
         return safeCopy;
     }
 
@@ -181,6 +298,9 @@ public class Users {
         return "Users{" +
                 "userID=" + userID +
                 ", userEmail='" + userEmail + '\'' +
+                ", userFullname='" + userFullname + '\'' +
+                ", userPhone='" + userPhone + '\'' +
+                ", userCountry='" + userCountry + '\'' +
                 ", userRole=" + getRoleString() +
                 ", isValidEmail=" + isValidEmail() +
                 '}';
@@ -193,6 +313,10 @@ public class Users {
         return "Users{" +
                 "userID=" + userID +
                 ", userEmail='" + userEmail + '\'' +
+                ", userFullname='" + userFullname + '\'' +
+                ", userPhone='" + userPhone + '\'' +
+                ", userAddress='" + userAddress + '\'' +
+                ", userCountry='" + userCountry + '\'' +
                 ", userPass='***HIDDEN***'" +
                 ", userRole=" + getRoleString() +
                 '}';
@@ -222,10 +346,11 @@ public class Users {
     /**
      * Create admin user
      */
-    public static Users createAdmin(String email, String hashedPassword) {
+    public static Users createAdmin(String email, String fullname, String hashedPassword) {
         Users admin = new Users();
         admin.generateID();
         admin.setUserEmail(email);
+        admin.setUserFullname(fullname);
         admin.setUserPass(hashedPassword);
         admin.setUserRole(true);
         return admin;
@@ -234,10 +359,15 @@ public class Users {
     /**
      * Create customer user
      */
-    public static Users createCustomer(String email, String hashedPassword) {
+    public static Users createCustomer(String email, String fullname, String phone, 
+                                     String address, String country, String hashedPassword) {
         Users customer = new Users();
         customer.generateID();
         customer.setUserEmail(email);
+        customer.setUserFullname(fullname);
+        customer.setUserPhone(phone);
+        customer.setUserAddress(address);
+        customer.setUserCountry(country);
         customer.setUserPass(hashedPassword);
         customer.setUserRole(false);
         return customer;
@@ -250,38 +380,7 @@ public class Users {
         return user != null && 
                user.isValidEmail() && 
                user.isStrongPassword() &&
+               user.hasRequiredFields() &&
                user.getUserID() > 0;
-    }
-
-    // ==================== DEMO/TEST METHODS ====================
-
-    /**
-     * Main method for testing
-     */
-    public static void main(String[] args) {
-        System.out.println("Testing Users model...");
-        
-        // Test admin creation
-        Users admin = Users.createAdmin("admin@bookstore.com", "hashedAdminPassword");
-        System.out.println("✅ Admin: " + admin.toSafeString());
-        System.out.println("   - Display Name: " + admin.getDisplayName());
-        System.out.println("   - Initials: " + admin.getInitials());
-        System.out.println("   - Is Admin: " + admin.isAdmin());
-        
-        // Test customer creation
-        Users customer = Users.createCustomer("john.doe@gmail.com", "hashedCustomerPassword");
-        System.out.println("✅ Customer: " + customer.toSafeString());
-        System.out.println("   - Display Name: " + customer.getDisplayName());
-        System.out.println("   - Initials: " + customer.getInitials());
-        System.out.println("   - Is Customer: " + customer.isCustomer());
-        
-        // Test validation
-        System.out.println("📋 Validation:");
-        System.out.println("   - Admin valid: " + Users.isValidUser(admin));
-        System.out.println("   - Customer valid: " + Users.isValidUser(customer));
-        
-        // Test email validation
-        Users invalidUser = new Users("invalid-email", "pass", false);
-        System.out.println("   - Invalid email: " + invalidUser.isValidEmail());
     }
 }
