@@ -1,33 +1,31 @@
+// ManagerProductServlet.java - Sử dụng Jakarta Servlet built-in multipart
 package com.bookstore.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.List;
-
-import org.apache.commons.fileupload2.core.DiskFileItemFactory;
-import org.apache.commons.fileupload2.core.FileItem;
-import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
+import java.util.Collection;
 
 import com.bookstore.dao.ProductDAO;
 import com.bookstore.model.Product;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 @WebServlet(name="/products")
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 3,  // 3 MB
+    maxFileSize = 1024 * 1024 * 40,       // 40 MB
+    maxRequestSize = 1024 * 1024 * 50     // 50 MB
+)
 public class ManagerProductServlet extends HttpServlet {
     private static final String UPLOAD_DIRECTORY = "upload";
-    private static final int MEMORY_THRESHOLD = 1024 * 1024 * 3; // 3MB
-    private static final int MAX_FILE_SIZE = 1024 * 1024 * 40; // 40MB
-    private static final int MAX_REQUEST_SIZE = 1024 * 1024 * 50; // 50MB
-
     private ProductDAO productDAO;
 
     @Override
@@ -51,7 +49,7 @@ public class ManagerProductServlet extends HttpServlet {
             request.setAttribute("error", "Error deleting product: " + e.getMessage());
         }
 
-        response.sendRedirect(request.getContextPath() + "/shop/admin/manager_product.jsp");
+        response.sendRedirect(request.getContextPath() + "/admin/manager_product.jsp");
     }
 
     @Override
@@ -59,16 +57,6 @@ public class ManagerProductServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-
-        // Configure upload settings
-        DiskFileItemFactory factory = DiskFileItemFactory.builder()
-                .setBufferSize(MEMORY_THRESHOLD)
-                .setPath(Paths.get(System.getProperty("java.io.tmpdir"))) // Use setPath with Path
-                .get();
-
-        JakartaServletFileUpload upload = new JakartaServletFileUpload(factory);
-        upload.setFileSizeMax(MAX_FILE_SIZE);
-        upload.setSizeMax(MAX_REQUEST_SIZE);
 
         String url = "/admin/manager_product.jsp";
         String productName = "";
@@ -80,61 +68,42 @@ public class ManagerProductServlet extends HttpServlet {
         String command = "";
 
         try {
-            List<FileItem> formItems = upload.parseRequest(request);
-
-            for (FileItem item : formItems) {
-                if (item.isFormField()) {
-                    String fieldName = item.getFieldName();
-                    String fieldValue = item.getString(StandardCharsets.UTF_8);
-                    switch (fieldName) {
-                        case "command":
-                            command = fieldValue;
-                            break;
-                        case "productName":
-                            productName = fieldValue;
-                            break;
-                        case "productDescription":
-                            productDescription = fieldValue;
-                            break;
-                        case "productID":
-                            try {
-                                productID = Long.parseLong(fieldValue);
-                            } catch (NumberFormatException e) {
-                                // Ignore invalid productID
-                            }
-                            break;
-                        case "productPrice":
-                            try {
-                                productPrice = Double.parseDouble(fieldValue);
-                            } catch (NumberFormatException e) {
-                                // Ignore invalid price
-                            }
-                            break;
-                        case "categoryID":
-                            try {
-                                categoryID = Long.parseLong(fieldValue);
-                            } catch (NumberFormatException e) {
-                                // Ignore invalid categoryID
-                            }
-                            break;
-                    }
-                } else {
-                    if (item.getSize() > 0) {
-                        String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
-                        File uploadDir = new File(uploadPath);
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdir();
-                        }
-                        fileName = new File(item.getName()).getName();
-                        String filePath = uploadPath + File.separator + fileName;
-                        File storeFile = new File(filePath);
-                        item.write(storeFile.toPath()); // Convert File to Path
-                        request.setAttribute("msg", UPLOAD_DIRECTORY + "/" + fileName);
-                        request.setAttribute("message", "Upload successful: " + UPLOAD_DIRECTORY + "/" + fileName);
-                    }
-                }
+            // Lấy các field thông thường
+            command = request.getParameter("command");
+            productName = request.getParameter("productName");
+            productDescription = request.getParameter("productDescription");
+            
+            String productPriceStr = request.getParameter("productPrice");
+            if (productPriceStr != null && !productPriceStr.isEmpty()) {
+                productPrice = Double.parseDouble(productPriceStr);
+            }
+            
+            String categoryIDStr = request.getParameter("categoryID");
+            if (categoryIDStr != null && !categoryIDStr.isEmpty()) {
+                categoryID = Long.parseLong(categoryIDStr);
+            }
+            
+            String productIDStr = request.getParameter("productID");
+            if (productIDStr != null && !productIDStr.isEmpty()) {
+                productID = Long.parseLong(productIDStr);
             }
 
+            // Xử lý file upload
+            Part filePart = request.getPart("productImage");
+            if (filePart != null && filePart.getSize() > 0) {
+                String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
+                
+                fileName = getSubmittedFileName(filePart);
+                String filePath = uploadPath + File.separator + fileName;
+                filePart.write(filePath);
+                request.setAttribute("message", "Upload successful: " + UPLOAD_DIRECTORY + "/" + fileName);
+            }
+
+            // Tạo object Product
             Product p = new Product();
             p.setProductImage(fileName.isEmpty() ? null : UPLOAD_DIRECTORY + "/" + fileName);
             if (categoryID != 0) {
@@ -145,6 +114,7 @@ public class ManagerProductServlet extends HttpServlet {
             p.setProductPrice(productPrice);
             p.setProductID(productID);
 
+            // Insert hoặc Update
             if ("update".equals(command)) {
                 productDAO.updateProduct(p);
             } else {
@@ -159,5 +129,17 @@ public class ManagerProductServlet extends HttpServlet {
 
         RequestDispatcher rd = getServletContext().getRequestDispatcher(url);
         rd.forward(request, response);
+    }
+
+    // Helper method để lấy tên file
+    private String getSubmittedFileName(Part part) {
+        String contentDisp = part.getHeader("content-disposition");
+        String[] tokens = contentDisp.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf("=") + 2, token.length() - 1);
+            }
+        }
+        return "";
     }
 }

@@ -1,5 +1,5 @@
 <%@page import="com.bookstore.model.Product"%>
-<%@page import="com.bookstore.java.util.ArrayList"%>
+<%@page import="java.util.ArrayList"%>
 <%@page import="com.bookstore.dao.ProductDAO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>

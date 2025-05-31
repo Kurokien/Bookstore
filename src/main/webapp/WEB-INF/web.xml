@@ -3,4 +3,66 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
+
+    <display-name>BookStore Web Application</display-name>
+    
+    <!-- Servlet Mappings -->
+    <servlet>
+        <servlet-name>ChartServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.ChartServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChartServlet</servlet-name>
+        <url-pattern>/ChartServlet</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ManagerCategoryServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.ManagerCategoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManagerCategoryServlet</servlet-name>
+        <url-pattern>/ManagerCategoryServlet</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ManagerProductServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.ManagerProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManagerProductServlet</servlet-name>
+        <url-pattern>/ManagerProductServlet</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Default servlet for admin index -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>admin/index.jsp</welcome-file>
+    </welcome-file-list>
+    
+    <!-- Error handling -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/error/404.jsp</location>
+    </error-page>
+    
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error/500.jsp</location>
+    </error-page>
+    
+    <!-- Character encoding filter -->
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
 </web-app>

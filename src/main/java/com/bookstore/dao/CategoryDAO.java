@@ -11,88 +11,202 @@ import java.util.logging.Logger;
 import com.bookstore.model.Category;
 
 public class CategoryDAO {
+    
+    private static final Logger logger = Logger.getLogger(CategoryDAO.class.getName());
 
     // get danh sách thể loại
     public ArrayList<Category> getListCategory() throws SQLException {
-        Connection connection = DBConnect.getConnection();
-        String sql = "SELECT * FROM category";
-        PreparedStatement ps = connection.prepareCall(sql);
-        ResultSet rs = ps.executeQuery();
         ArrayList<Category> list = new ArrayList<>();
-        while (rs.next()) {
-            Category category = new Category();
-            category.setCategoryID(rs.getLong("category_id"));
-            category.setCategoryName(rs.getString("category_name"));
-            list.add(category);
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
+        try {
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                throw new SQLException("Cannot establish database connection");
+            }
+            
+            String sql = "SELECT * FROM category";
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Category category = new Category();
+                category.setCategoryID(rs.getLong("category_id"));
+                category.setCategoryName(rs.getString("category_name"));
+                list.add(category);
+            }
+            
+        } catch (SQLException e) {
+            logger.severe("Error getting category list: " + e.getMessage());
+            throw e;
+        } finally {
+            // Đóng resources theo thứ tự ngược lại
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                logger.warning("Error closing resources: " + e.getMessage());
+            }
         }
+        
         return list;
     }
     
     // get thể loại
     public Category getCategory(long category_id) throws SQLException {
-        Connection connection = DBConnect.getConnection();
         Category c = new Category();
-        String sql = "SELECT * FROM category where category_id = '" + category_id + "'";
-        PreparedStatement ps = connection.prepareCall(sql);
-        ResultSet rs = ps.executeQuery();
-        if (rs.next()) {
-            c.setCategoryID(rs.getLong("category_id"));
-            c.setCategoryName(rs.getString("category_name"));
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
+        try {
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                throw new SQLException("Cannot establish database connection");
+            }
+            
+            String sql = "SELECT * FROM category WHERE category_id = ?";
+            ps = connection.prepareStatement(sql);
+            ps.setLong(1, category_id);
+            rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                c.setCategoryID(rs.getLong("category_id"));
+                c.setCategoryName(rs.getString("category_name"));
+            }
+            
+        } catch (SQLException e) {
+            logger.severe("Error getting category: " + e.getMessage());
+            throw e;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                logger.warning("Error closing resources: " + e.getMessage());
+            }
         }
+        
         return c;
     }
 
     // thêm mới dữ liệu
     public boolean insertCategory(Category c) {
-        Connection connection = DBConnect.getConnection();
-        String sql = "INSERT INTO category VALUES(?,?)";
+        Connection connection = null;
+        PreparedStatement ps = null;
+        
         try {
-            PreparedStatement ps = connection.prepareCall(sql);
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                logger.severe("Cannot establish database connection for insert");
+                return false;
+            }
+            
+            String sql = "INSERT INTO category VALUES(?,?)";
+            ps = connection.prepareStatement(sql);
             ps.setLong(1, c.getCategoryID());
             ps.setString(2, c.getCategoryName());
-            return ps.executeUpdate() == 1;
+            
+            int result = ps.executeUpdate();
+            return result == 1;
+            
         } catch (SQLException ex) {
-            Logger.getLogger(CategoryDAO.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe("Error inserting category: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                logger.warning("Error closing resources: " + e.getMessage());
+            }
         }
         return false;
     }
 
     // cập nhật dữ liệu
     public boolean updateCategory(Category c) {
-        Connection connection = DBConnect.getConnection();
-        String sql = "UPDATE category SET category_name = ? WHERE category_id = ?";
+        Connection connection = null;
+        PreparedStatement ps = null;
+        
         try {
-            PreparedStatement ps = connection.prepareCall(sql);
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                logger.severe("Cannot establish database connection for update");
+                return false;
+            }
+            
+            String sql = "UPDATE category SET category_name = ? WHERE category_id = ?";
+            ps = connection.prepareStatement(sql);
             ps.setString(1, c.getCategoryName());
             ps.setLong(2, c.getCategoryID());
-            return ps.executeUpdate() == 1;
+            
+            int result = ps.executeUpdate();
+            return result == 1;
+            
         } catch (SQLException ex) {
-            Logger.getLogger(CategoryDAO.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe("Error updating category: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                logger.warning("Error closing resources: " + e.getMessage());
+            }
         }
         return false;
     }
 
     // xóa dữ liệu
     public boolean deleteCategory(long category_id) {
-        Connection connection = DBConnect.getConnection();
-        String sql = "DELETE FROM category WHERE category_id = ?";
+        Connection connection = null;
+        PreparedStatement ps = null;
+        
         try {
-            PreparedStatement ps = connection.prepareCall(sql);
+            connection = DBConnect.getConnection();
+            if (connection == null) {
+                logger.severe("Cannot establish database connection for delete");
+                return false;
+            }
+            
+            String sql = "DELETE FROM category WHERE category_id = ?";
+            ps = connection.prepareStatement(sql);
             ps.setLong(1, category_id);
-            return ps.executeUpdate() == 1;
+            
+            int result = ps.executeUpdate();
+            return result == 1;
+            
         } catch (SQLException ex) {
-            Logger.getLogger(CategoryDAO.class.getName()).log(Level.SEVERE, null, ex);
+            logger.severe("Error deleting category: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (connection != null) connection.close();
+            } catch (SQLException e) {
+                logger.warning("Error closing resources: " + e.getMessage());
+            }
         }
         return false;
     }
     
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         CategoryDAO dao = new CategoryDAO();
-//        for (int i = 1; i < 10; i++) {
-//            dao.insertCategory(new Category(i, "Category " + i));
-//        }
-//        System.out.println(dao.updateCategory(new Category(8, "Tùng Dương")));
-        System.out.println(dao.deleteCategory(7));
+        try {
+            System.out.println("Testing CategoryDAO...");
+            ArrayList<Category> categories = dao.getListCategory();
+            System.out.println("✅ Found " + categories.size() + " categories");
+            for (Category cat : categories) {
+                System.out.println("- " + cat.getCategoryName());
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ Error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
-    
 }

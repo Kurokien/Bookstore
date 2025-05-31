@@ -1,6 +1,6 @@
-<%@page import="model.Category"%>
+<%@page import="com.bookstore.model.Category"%>
 <%@page import="java.util.ArrayList"%>
-<%@page import="dao.CategoryDAO"%>
+<%@page import="com.bookstore.dao.CategoryDAO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib uri="jakarta.tags.fmt" prefix="fmt" %>
@@ -31,7 +31,7 @@
                 <div id="rightContent">
                     <h3>Quản lý danh mục</h3>
                     
-                    <a href="${root}/admin/insert_category.jsp">Thêm danh mục</a>
+                    <a href="${root}/shop/admin/insert_category.jsp">Thêm danh mục</a>
 
                     <table class="data">
 
@@ -53,8 +53,8 @@
                             <td class="data"><%=category.getCategoryName()%></td>
                             <td class="data" width="90px">
                             <center>
-                                <a href="${root}/admin/update_category.jsp?command=update&category_id=<%=category.getCategoryID()%>">Sửa</a>&nbsp;&nbsp; | &nbsp;&nbsp;
-                                <a href="/shop/ManagerCategoryServlet?command=delete&category_id=<%=category.getCategoryID()%>">Xóa</a>
+                                <a href="${root}/shop/admin/update_category.jsp?command=update&category_id=<%=category.getCategoryID()%>">Sửa</a>&nbsp;&nbsp; | &nbsp;&nbsp;
+                                <a href="${root}/shop/ManagerCategoryServlet?command=delete&category_id=<%=category.getCategoryID()%>">Xóa</a>
                             </center>
                             </td>
                         </tr>

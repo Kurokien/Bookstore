@@ -12,13 +12,13 @@
     <body>
 
         <div id="leftBar">
-            <ul>
-                <li><a href="${root}/shop/admin/index.jsp">Trang chủ</a></li>
-                <li><a href="${root}/shop/admin/manager_category.jsp">Danh mục</a></li>
-                <li><a href="${root}/shop/admin/manager_product.jsp">Sản phẩm</a></li>
-                <li><a href="${root}/shop/admin/manager_bill.jsp">Hóa đơn</a></li>
-            </ul>
-        </div>
+    <ul>
+        <li><a href="${root}/shop/admin/index.jsp">Trang chủ</a></li>
+        <li><a href="${root}/shop/admin/manager_category.jsp">Danh mục</a></li>
+        <li><a href="${root}/shop/admin/manager_product.jsp">Sản phẩm</a></li>
+        <li><a href="${root}/shop/admin/manager_bill.jsp">Hóa đơn</a></li>
+    </ul>
+</div>
 
     </body>
 </html>
