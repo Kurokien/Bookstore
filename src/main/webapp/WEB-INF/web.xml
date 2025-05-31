@@ -54,6 +54,15 @@
         <url-pattern>/ManagerProductServlet</url-pattern>
     </servlet-mapping>
     
+    <servlet>
+        <servlet-name>CartServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.CartServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CartServlet</servlet-name>
+        <url-pattern>/CartServlet</url-pattern>
+    </servlet-mapping>
+
     <!-- Default servlet for admin index -->
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

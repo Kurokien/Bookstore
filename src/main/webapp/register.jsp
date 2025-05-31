@@ -58,6 +58,7 @@
             .email-check {
                 margin-top: 5px;
                 min-height: 20px;
+                font-size: 12px;
             }
             
             .password-strength {
@@ -113,35 +114,29 @@
         
         <script type="text/javascript">
             $(document).ready(function () {
-                var emailTimer;
                 var isEmailValid = false;
                 var isPasswordMatch = false;
                 
                 // Email validation
                 $("#email").keyup(function (e) {
-                    clearTimeout(emailTimer);
                     var email = $(this).val();
-                    
+                    var emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
                     if (email.length > 0) {
-                        emailTimer = setTimeout(function () {
-                            checkEmailAjax(email);
-                        }, 1000);
+                        if (emailRegex.test(email)) {
+                            $("#email-result").html('<span class="success-message">✓ Valid email format</span>');
+                            isEmailValid = true;
+                        } else {
+                            $("#email-result").html('<span class="error-message">✗ Invalid email format</span>');
+                            isEmailValid = false;
+                        }
                     } else {
                         $("#email-result").html("");
                         isEmailValid = false;
-                        updateSubmitButton();
                     }
+                    updateSubmitButton();
                 });
 
-                function checkEmailAjax(email) {
-                    $("#email-result").html('<img src="img/ajax-loader.gif" style="width:16px;height:16px;" /> Checking...');
-                    $.post('CheckEmailServlet', {'username': email}, function (data) {
-                        $("#email-result").html(data);
-                        isEmailValid = data.includes("available.png");
-                        updateSubmitButton();
-                    });
-                }
-                
                 // Password strength check
                 $("#password").keyup(function() {
                     var password = $(this).val();
@@ -213,9 +208,10 @@
                 });
                 
                 // Form submission validation
+                // Form submission validation
                 $("#registerForm").submit(function(e) {
                     if (!isEmailValid) {
-                        alert("Please use a valid and available email address.");
+                        alert("Please use a valid email address.");
                         e.preventDefault();
                         return false;
                     }

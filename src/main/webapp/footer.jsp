@@ -63,7 +63,7 @@
 
         <!---->
         <div class="footer">
-            <p class="footer-class">Copyright © 2018 by Book Store</p>
+            <p class="footer-class">Copyright © 2025 by Book Store</p>
             <a href="#" id="toTop" style="display: block;"> <span id="toTopHover" style="opacity: 1;"> </span></a>
 
         </div>

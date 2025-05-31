@@ -70,9 +70,8 @@
                                 <li><a href="<%= request.getContextPath() %>/login.jsp">LOGIN</a></li>
                                 <li><a href="<%= request.getContextPath() %>/register.jsp">REGISTER</a></li>
                             <%}%>
-                            <li><a href="<%= request.getContextPath() %>/checkout.jsp">CHECKOUT</a></li>
                             <li><div class="cart">
-                                    <a href="#" class="cart-in"> </a>
+                                    <a href="<%= request.getContextPath()%>/cart.jsp" class="cart-in"> </a>
                                     <span> <%=cart.countItem()%></span>
                                 </div>
                                 <ul class="sub-icon1 list">
@@ -132,7 +131,6 @@
                             %>
                         </li> 						
                         <li><a href="aboutus.jsp" >About us</a></li>            
-                        <li><a href="404.jsp" >Blog</a></li>						  				 
                         <li><a href="contact.jsp" >Contact</a></li>
 
                     </ul>

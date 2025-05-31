@@ -77,7 +77,9 @@
                     <form action="CheckOutServlet" method="POST">
                         <div>
                             <span>Address *</span>
-                            <input type="text" name="address">
+                            <input type="text" name="address" 
+                                   value="<%=users != null && users.getUserAddress() != null ? users.getUserAddress() : ""%>"
+                                   placeholder="Enter your delivery address">
                         </div>
                         <div>
                             <span>Payment *</span>
