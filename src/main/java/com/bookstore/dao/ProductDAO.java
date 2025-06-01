@@ -181,11 +181,11 @@ public class ProductDAO {
         
         try {
             connection = DBConnect.getConnection();
-            String sql = "SELECT * FROM product WHERE category_id = ? LIMIT ?, ?";
+            String sql = "SELECT * FROM product WHERE category_id = ? LIMIT ? OFFSET ?";
             ps = connection.prepareStatement(sql);
             ps.setLong(1, categoryID);
-            ps.setInt(2, firstResult);
-            ps.setInt(3, maxResult);
+            ps.setInt(2, maxResult);
+            ps.setInt(3, firstResult);
             rs = ps.executeQuery();
             
             while (rs.next()) {
@@ -207,11 +207,11 @@ public class ProductDAO {
         
         try {
             connection = DBConnect.getConnection();
-            String sql = "SELECT * FROM product WHERE product_name LIKE ? LIMIT ?, ?";
+            String sql = "SELECT * FROM product WHERE product_name LIKE ? LIMIT ? OFFSET ?";
             ps = connection.prepareStatement(sql);
             ps.setString(1, "%" + productName + "%");
-            ps.setInt(2, firstResult);
-            ps.setInt(3, maxResult);
+            ps.setInt(2, maxResult);
+            ps.setInt(3, firstResult);
             rs = ps.executeQuery();
             
             while (rs.next()) {
@@ -268,7 +268,8 @@ public class ProductDAO {
         } finally {
             closeResources(rs, ps, connection);
         }
-        
+
+        System.out.println("Total Product Count : " + count);
         return count;
     }
     

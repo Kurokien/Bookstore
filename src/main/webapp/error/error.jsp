@@ -7,12 +7,12 @@
         <title>Error</title>
           <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>product</title>
-        <link href="css/bootstrap.css" rel="stylesheet" type="text/css" media="all" />
+        <link href="../css/bootstrap.css" rel="stylesheet" type="text/css" media="all" />
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="js/jquery.min.js"></script>
+        <script src="../js/jquery.min.js"></script>
         <!-- Custom Theme files -->
         <!--theme-style-->
-        <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />	
+        <link href="../css/style.css" rel="stylesheet" type="text/css" media="all" />
         <!--//theme-style-->
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -24,7 +24,7 @@
         <!--//fonts-->
         <script type="text/javascript" src="js/move-top.js"></script>
         <script type="text/javascript" src="js/easing.js"></script>
-        <script src="js/responsiveslides.min.js"></script>
+        <script src="../js/responsiveslides.min.js"></script>
     </head>
     <body>
 
@@ -34,8 +34,8 @@
             <div class="container"> 
                 <div class="error-404 text-center">
                     <h1>404</h1>
-                    <p>You ' ve Failed</p>
-                    <a class="b-home" href="index.jsp">Back to Home</a>
+                    <p>Page not found</p>
+                    <a class="b-home" href="../index.jsp">Back to Home</a>
                 </div>
             </div>
          </div>

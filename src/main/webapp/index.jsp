@@ -132,38 +132,37 @@
 
         <%
             ProductDAO productDAO = new ProductDAO();
-            String productName = "";
-            if(request.getParameter("q") != null) {
-                productName = request.getParameter("q");
-            }
+            String productName = request.getParameter("q") != null ? request.getParameter("q") : "";
             Cart cart = (Cart) session.getAttribute("cart");
             if (cart == null) {
                 cart = new Cart();
                 session.setAttribute("cart", cart);
             }
-            int pages = 1, firstResult = 0, maxResult = 0, total = 0;
+
+            int pages = 1, firstResult = 0, maxResult = 8;
             if (request.getParameter("pages") != null) {
                 try {
-                    pages = (int) Integer.parseInt(request.getParameter("pages"));
+                    pages = Integer.parseInt(request.getParameter("pages"));
                 } catch (Exception e) {
                     pages = 1;
                 }
             }
-            
-            if(pages < 1 ) {
+            if (pages < 1) {
                 pages = 1;
             }
 
-            total = productDAO.countAllProduct(productName);
-            if (total <= 8) {
-                firstResult = 0;
-                maxResult = total;
-            }else{
-                firstResult = (pages - 1) * 8;
-                maxResult = 8;
-            }
-
+            int total = productDAO.countAllProduct(productName);
+            firstResult = (pages - 1) * maxResult;
             ArrayList<Product> listProduct = productDAO.getListProductByNav(productName, firstResult, maxResult);
+
+            // Check if no products are found
+            if (total == 0) {
+                listProduct = new ArrayList<>(); // Explicitly set empty list
+            } else if (firstResult >= total) {
+                pages = 1; // Reset to first page if beyond total results
+                firstResult = 0;
+                listProduct = productDAO.getListProductByNav(productName, firstResult, maxResult);
+            }
         %>
 
         <jsp:include page="header.jsp"></jsp:include>

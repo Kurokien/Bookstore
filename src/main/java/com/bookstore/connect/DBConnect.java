@@ -7,38 +7,39 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DBConnect {
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "minhkhoa2004";
-    
+    // Update with your Supabase PostgreSQL credentials
+    private static final String URL = "jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require";
+    private static final String USER = "postgres.nfwdxeisgzvpnvxbwies"; // Replace with your Supabase username
+    private static final String PASSWORD = "Lw3gA7VnZk9TyX2uQm5E"; // Replace with your Supabase password
+
     private static final Logger logger = Logger.getLogger(DBConnect.class.getName());
-    
+
     public static Connection getConnection() {
         Connection conn = null;
         try {
-            // Explicitly load the MySQL driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            logger.info("MySQL Driver loaded successfully.");
-            
+            // Explicitly load the PostgreSQL driver
+            Class.forName("org.postgresql.Driver");
+            logger.info("PostgreSQL Driver loaded successfully.");
+
             logger.info("Attempting to connect to database: " + URL);
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            
-            if (conn != null) {
-                logger.info("Database connection established successfully.");
-            } else {
+
+            if (conn == null) {
                 logger.severe("Connection is null after DriverManager.getConnection()");
             }
-            
+
+            logger.info("Database connection established successfully.");
+            return conn;
         } catch (ClassNotFoundException e) {
-            logger.severe("MySQL Driver not found: " + e.getMessage());
+            logger.severe("PostgreSQL Driver not found: " + e.getMessage());
             e.printStackTrace();
         } catch (SQLException e) {
             logger.severe("Database connection failed: " + e.getMessage());
             logger.severe("Error Code: " + e.getErrorCode());
             logger.severe("SQL State: " + e.getSQLState());
             e.printStackTrace();
-            
-            // Ghi log chi tiết để debug
+
+            // Log detailed error for debugging
             System.err.println("=== DATABASE CONNECTION ERROR ===");
             System.err.println("URL: " + URL);
             System.err.println("User: " + USER);
@@ -48,10 +49,10 @@ public class DBConnect {
             logger.severe("Unexpected error: " + e.getMessage());
             e.printStackTrace();
         }
-        
-        return conn;
+
+        return null;
     }
-    
+
     /**
      * Test connection method
      */
@@ -67,7 +68,7 @@ public class DBConnect {
         }
         return false;
     }
-    
+
     /**
      * Close connection safely
      */
@@ -81,7 +82,7 @@ public class DBConnect {
             }
         }
     }
-    
+
     public static void main(String[] args) {
         System.out.println("Testing database connection...");
         Connection conn = getConnection();
