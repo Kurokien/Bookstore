@@ -200,11 +200,11 @@
                         </tr>
                         
                         <tr>
-                            <td style="float: right"><b>Giá bán (USD): <span class="required">*</span></b></td>
+                            <td style="float: right"><b>Giá bán (VND): <span class="required">*</span></b></td>
                             <td>
                                 <input type="number" class="sedang" name="productPrice" 
                                        value="<%=String.format("%.2f", currentProduct.getProductPrice())%>"
-                                       step="0.01" min="0" max="9999.99" required>
+                                       step="0.01" min="0" max="9999999999999.99" required>
                             </td>
                         </tr>
                         

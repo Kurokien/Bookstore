@@ -87,6 +87,9 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("user", user);
                 session.setAttribute("isLoggedIn", true);
                 
+                // Check if there's a redirect URL (for both admin and customer)
+                String redirectURL = (String) session.getAttribute("redirectURL");
+                
                 if (user.isUserRole()) {
                     // Admin user
                     session.setAttribute("admin", user);
@@ -95,7 +98,15 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("userId", user.getUserID());
                     
                     System.out.println("Admin logged in: " + user.getUserEmail() + " at " + new java.util.Date());
-                    response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
+                    
+                    // Redirect admin
+                    if (redirectURL != null && !redirectURL.isEmpty()) {
+                        session.removeAttribute("redirectURL");
+                        System.out.println("Admin redirecting to saved URL: " + redirectURL);
+                        response.sendRedirect(redirectURL);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
+                    }
                     
                 } else {
                     // Customer user
@@ -106,10 +117,10 @@ public class LoginServlet extends HttpServlet {
                     
                     System.out.println("Customer logged in: " + user.getUserEmail() + " at " + new java.util.Date());
                     
-                    // Check if there's a redirect URL
-                    String redirectURL = (String) session.getAttribute("redirectURL");
+                    // Redirect customer
                     if (redirectURL != null && !redirectURL.isEmpty()) {
                         session.removeAttribute("redirectURL");
+                        System.out.println("Customer redirecting to saved URL: " + redirectURL);
                         response.sendRedirect(redirectURL);
                     } else {
                         response.sendRedirect(request.getContextPath() + "/index.jsp");
@@ -130,7 +141,7 @@ public class LoginServlet extends HttpServlet {
     }
     
     /**
-     * Handle admin-specific login
+     * Handle admin-specific login (DEPRECATED - keeping for backward compatibility)
      */
     private void handleAdminLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -144,7 +155,7 @@ public class LoginServlet extends HttpServlet {
             // Validate input
             if (email == null || password == null || email.trim().isEmpty() || password.trim().isEmpty()) {
                 System.out.println("Empty fields detected");
-                response.sendRedirect(request.getContextPath() + "/admin/login.jsp?error=empty_fields");
+                redirectToLoginWithError(request, response, "Email and password are required", email);
                 return;
             }
             
@@ -166,17 +177,25 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("userId", user.getUserID());
                 
                 System.out.println("Admin logged in: " + user.getUserEmail() + " at " + new java.util.Date());
-                response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
+                
+                // Check redirect URL for admin
+                String redirectURL = (String) session.getAttribute("redirectURL");
+                if (redirectURL != null && !redirectURL.isEmpty()) {
+                    session.removeAttribute("redirectURL");
+                    response.sendRedirect(redirectURL);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
+                }
                 
             } else {
                 // Admin login failed
                 System.out.println("Admin login failed for email: " + email);
-                response.sendRedirect(request.getContextPath() + "/admin/login.jsp?error=invalid&email=" + email);
+                redirectToLoginWithError(request, response, "Invalid email or password. Admin access required.", email);
             }
             
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/admin/login.jsp?error=system_error");
+            redirectToLoginWithError(request, response, "An error occurred during login. Please try again.", email);
         }
     }
     
@@ -215,7 +234,15 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("userId", user.getUserID());
                 
                 System.out.println("Customer logged in: " + user.getUserEmail() + " at " + new java.util.Date());
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
+                
+                // Check redirect URL for customer
+                String redirectURL = (String) session.getAttribute("redirectURL");
+                if (redirectURL != null && !redirectURL.isEmpty()) {
+                    session.removeAttribute("redirectURL");
+                    response.sendRedirect(redirectURL);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/index.jsp");
+                }
                 
             } else {
                 // Customer login failed
@@ -276,6 +303,6 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Enhanced Login Servlet for Admin and Customer with Email Authentication";
+        return "Enhanced Login Servlet for Admin and Customer with Email Authentication and Redirect Support";
     }
 }

@@ -9,7 +9,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Quản lý kho hàng</title>
+    <title>Quản lý sản phẩm</title>
 
     <c:set var="root" value="${pageContext.request.contextPath}"/>
     <link href="${root}/css/mos-style.css" rel='stylesheet' type='text/css' />
@@ -62,37 +62,6 @@
         .low-stock { background-color: #fff3cd; color: #856404; animation: pulse 2s infinite; }
         .out-of-stock { background-color: #f8d7da; color: #721c24; }
         
-        .stock-actions {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .stock-input {
-            width: 60px;
-            padding: 3px 6px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            text-align: center;
-            font-size: 12px;
-        }
-        
-        .btn-stock {
-            padding: 4px 8px;
-            border: none;
-            border-radius: 3px;
-            font-size: 11px;
-            cursor: pointer;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .btn-add { background: #28a745; }
-        .btn-remove { background: #dc3545; }
-        .btn-add:hover { background: #218838; }
-        .btn-remove:hover { background: #c82333; }
-        
         .alert {
             padding: 12px;
             margin-bottom: 15px;
@@ -111,15 +80,26 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
+        .actions-cell {
+            font-size: 11px;
+        }
+        
+        .actions-cell a {
+            color: #007cba;
+            text-decoration: none;
+            margin: 0 2px;
+        }
+        
+        .actions-cell a:hover {
+            text-decoration: underline;
+        }
+
     </style>
 </head>
 <body>
     <%
-        // Check admin authentication
-        if (session.getAttribute("admin") == null) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
+        // Bỏ phần check authentication vì AdminAuthFilter đã xử lý
         
         ProductDAO productDAO = new ProductDAO();
         
@@ -183,7 +163,7 @@
         <jsp:include page="menu.jsp"></jsp:include>
 
         <div id="rightContent">
-            <h3>📦 Quản lý kho hàng</h3>
+            <h3>📦 Quản lý sản phẩm & kho hàng</h3>
             
             <!-- Display messages -->
             <c:if test="${param.success != null}">
@@ -197,6 +177,11 @@
                     ❌ ${param.error}
                 </div>
             </c:if>
+            
+            <!-- Add Product Button -->
+            <div style="margin-bottom: 15px;">
+                <a href="${root}/admin/insert_product.jsp" class="button">➕ Thêm sản phẩm mới</a>
+            </div>
             
             <!-- Summary Cards -->
             <div class="stock-summary">
@@ -253,7 +238,7 @@
                     <th class="data" width="80px">Giá</th>
                     <th class="data" width="80px">Tồn kho</th>
                     <th class="data" width="100px">Trạng thái</th>
-                    <th class="data" width="200px">Thao tác</th>
+                    <th class="data" width="120px">Tùy chọn</th>
                 </tr>
 
                 <%if(filteredProducts.isEmpty()) {%>
@@ -296,26 +281,14 @@
                                 <%=product.getStockStatus()%>
                             </span>
                         </td>
-                        <td class="data" width="200px">
-                            <div class="stock-actions">
-                                <form method="POST" action="${root}/admin/StockServlet" style="display: inline;">
-                                    <input type="hidden" name="productId" value="<%=product.getProductID()%>">
-                                    <input type="hidden" name="action" value="add">
-                                    <input type="number" name="quantity" class="stock-input" 
-                                           placeholder="+" min="1" max="100" value="10" required>
-                                    <button type="submit" class="btn-stock btn-add">+</button>
-                                </form>
-                                
-                                <%if(product.getQuantity() > 0) {%>
-                                    <form method="POST" action="${root}/admin/StockServlet" style="display: inline;">
-                                        <input type="hidden" name="productId" value="<%=product.getProductID()%>">
-                                        <input type="hidden" name="action" value="remove">
-                                        <input type="number" name="quantity" class="stock-input" 
-                                               placeholder="-" min="1" max="<%=product.getQuantity()%>" value="1" required>
-                                        <button type="submit" class="btn-stock btn-remove">-</button>
-                                    </form>
-                                <%}%>
-                            </div>
+                        <td class="data actions-cell" width="120px">
+                            <center>
+                                <a href="${root}/admin/update_product.jsp?command=update&product_id=<%=product.getProductID()%>">✏️ Sửa</a>
+                                <br>
+                                <a href="${root}/ManagerProductServlet?product_id=<%=product.getProductID()%>" 
+                                   onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?')" 
+                                   style="color: #dc3545;">🗑️ Xóa</a>
+                            </center>
                         </td>
                     </tr>
                     <%}%>
@@ -337,24 +310,10 @@
     </div>
 
     <script>
-        // Auto-hide alerts after 5 seconds
+        // Auto-hide alerts after 3 seconds
         setTimeout(function() {
             $('.alert').fadeOut();
-        }, 5000);
-        
-        // Confirm before stock operations
-        $('.btn-stock').click(function(e) {
-            var action = $(this).hasClass('btn-add') ? 'thêm' : 'trừ';
-            var quantity = $(this).siblings('.stock-input').val();
-            
-            if (!quantity || quantity <= 0) {
-                e.preventDefault();
-                alert('Vui lòng nhập số lượng hợp lệ!');
-                return false;
-            }
-            
-            return confirm('Bạn có chắc muốn ' + action + ' ' + quantity + ' sản phẩm?');
-        });
+        }, 3000);
     </script>
 </body>
 </html>

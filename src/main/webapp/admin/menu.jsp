@@ -20,12 +20,31 @@
             .logout-confirm {
                 color: #ff4757 !important;
             }
+            
+            .current-page {
+                background-color: #e3f2fd !important;
+                border-left: 4px solid #007cba;
+                font-weight: bold;
+            }
         </style>
         
         <script>
             function confirmLogout() {
                 return confirm('Bạn có chắc muốn đăng xuất không?');
             }
+            
+            // Highlight current page
+            $(document).ready(function() {
+                var currentPath = window.location.pathname;
+                var menuItems = $('#leftBar a');
+                
+                menuItems.each(function() {
+                    var href = $(this).attr('href');
+                    if (currentPath.includes(href.split('/').pop())) {
+                        $(this).parent().addClass('current-page');
+                    }
+                });
+            });
         </script>
     </head>
     <body>
@@ -43,13 +62,8 @@
                     </a>
                 </li>
                 <li>
-                    <a href="${root}/admin/manager_product.jsp">
-                        <span class="menu-icon">📚</span>Sản phẩm
-                    </a>
-                </li>
-                <li>
                     <a href="${root}/admin/stock_management.jsp">
-                        <span class="menu-icon">📦</span>Quản lý kho
+                        <span class="menu-icon">📦</span>Quản lý kho & sản phẩm
                     </a>
                 </li>
                 <li>
@@ -57,12 +71,8 @@
                         <span class="menu-icon">🧾</span>Hóa đơn
                     </a>
                 </li>
-                <li>
-                    <a href="${root}/admin/manager_chart.jsp">
-                        <span class="menu-icon">📊</span>Thống kê
-                    </a>
-                </li>
-                <li>
+
+                <li style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px;">
                     <a href="${root}/LogoutServlet" class="logout-confirm" onclick="return confirmLogout()">
                         <span class="menu-icon">🚪</span>Đăng xuất
                     </a>

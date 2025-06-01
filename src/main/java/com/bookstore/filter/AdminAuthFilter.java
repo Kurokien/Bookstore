@@ -25,11 +25,10 @@ public class AdminAuthFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         
         // Các trang không cần authentication
-        if (requestURI.endsWith("/admin/login.jsp") || 
-            requestURI.endsWith("/admin/login") ||
-            requestURI.contains("/css/") ||
+        if (requestURI.contains("/css/") ||
             requestURI.contains("/js/") ||
-            requestURI.contains("/images/")) {
+            requestURI.contains("/images/") ||
+            requestURI.contains("/upload/")) {
             
             chain.doFilter(request, response);
             return;
@@ -46,15 +45,28 @@ public class AdminAuthFilter implements Filter {
             
             isLoggedIn = loggedIn != null && loggedIn;
             isAdmin = "admin".equals(userRole);
+            
+            // Debug logging
+            System.out.println("AdminAuthFilter - URI: " + requestURI);
+            System.out.println("AdminAuthFilter - isLoggedIn: " + isLoggedIn + ", isAdmin: " + isAdmin);
+            System.out.println("AdminAuthFilter - userRole: " + userRole);
         }
         
         if (isLoggedIn && isAdmin) {
             // User đã đăng nhập và là admin, cho phép truy cập
             chain.doFilter(request, response);
         } else {
-            // Chưa đăng nhập hoặc không phải admin, chuyển hướng đến login
+            // Chưa đăng nhập hoặc không phải admin, chuyển hướng đến login của client
             System.out.println("Access denied for: " + requestURI + " - Not authenticated as admin");
-            httpResponse.sendRedirect(contextPath + "/admin/login.jsp?error=access_denied");
+            
+            // Lưu URL để redirect sau khi đăng nhập
+            if (session != null) {
+                session.setAttribute("redirectURL", requestURI);
+            }
+            
+            // Redirect đến login.jsp của client với thông báo cần quyền admin
+            httpResponse.sendRedirect(contextPath + "/login.jsp?error=" + 
+                                    java.net.URLEncoder.encode("Bạn cần đăng nhập với quyền quản trị để truy cập trang này.", "UTF-8"));
         }
     }
 }

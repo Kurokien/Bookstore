@@ -27,6 +27,7 @@
         <url-pattern>/logout</url-pattern>
         <url-pattern>/admin/logout</url-pattern>
     </servlet-mapping>
+    
     <servlet>
         <servlet-name>ChartServlet</servlet-name>
         <servlet-class>com.bookstore.controller.ChartServlet</servlet-class>
@@ -61,6 +62,17 @@
     <servlet-mapping>
         <servlet-name>CartServlet</servlet-name>
         <url-pattern>/CartServlet</url-pattern>
+    </servlet-mapping>
+
+    <!-- Stock Management Servlet -->
+    <servlet>
+        <servlet-name>StockServlet</servlet-name>
+        <servlet-class>com.bookstore.controller.StockServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StockServlet</servlet-name>
+        <url-pattern>/admin/StockServlet</url-pattern>
+        <url-pattern>/StockServlet</url-pattern>
     </servlet-mapping>
 
     <!-- Default servlet for admin index -->
