@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class DBConnect {
     private static final String URL = "jdbc:mysql://127.0.0.1:3306/shop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static final String USER = "root";
-    private static final String PASSWORD = "Az242005";
+    private static final String PASSWORD = "minhkhoa2004";
     
     private static final Logger logger = Logger.getLogger(DBConnect.class.getName());
     
