@@ -269,7 +269,7 @@
                             </div>
                         </td>
                         <td class="data" width="80px">
-                            <strong>$<%=String.format("%.2f", product.getProductPrice())%></strong>
+                            <strong><%=String.format("%.2f", product.getProductPrice())%> VND</strong>
                         </td>
                         <td class="data" width="80px" style="text-align: center;">
                             <strong style="font-size: 16px; color: <%=isOutOfStock ? "#dc3545" : (product.hasLowStock() ? "#ffc107" : "#28a745")%>">

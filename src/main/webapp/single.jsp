@@ -320,7 +320,7 @@
                             <!-- Pricing Section -->
                             <div class="pricing-section">
                                 <div class="price-display">
-                                    $<%=String.format("%.2f", product.getProductPrice())%>
+                                    <%=String.format("%.2f", product.getProductPrice())%> VND
                                 </div>
                             </div>
                             
@@ -341,7 +341,7 @@
                                 
                                 <!-- Total Preview -->
                                 <div class="total-preview">
-                                    Total: $<span id="total-price"><%=String.format("%.2f", product.getProductPrice())%></span>
+                                    Total: <span id="total-price"><%=String.format("%.2f", product.getProductPrice())%> VND</span>
                                 </div>
                                 
                                 <!-- Add to Cart Section -->

@@ -94,7 +94,7 @@
                                     <div class="white">
                                         <a href="#" class="hvr-shutter-in-vertical hvr-shutter-in-vertical2 add-to-cart-btn" 
                                            data-product-id="<%=p.getProductID()%>" data-product-name="<%=p.getProductName()%>">ADD TO CART</a>
-                                        <p class="dollar"><span class="in-dollar">$</span><span><%=p.getProductPrice()%></span></p>
+                                        <p class="dollar"><span class="in-dollar">VND</span><span><%=p.getProductPrice()%></span></p>
                                         <div class="clearfix"></div>
                                     </div>
 

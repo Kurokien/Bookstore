@@ -245,7 +245,7 @@
                                         <%}%>
                                         
                                         <p class="dollar">
-                                            <span class="in-dollar">$</span>
+                                            <span class="in-dollar">VND</span>
                                             <span><%=String.format("%.2f", p.getProductPrice())%></span>
                                         </p>
                                         

@@ -370,7 +370,7 @@
                     </div>
                     <div class="total-item total-final">
                         <span>Tổng tiền:</span>
-                        <span>$<%=String.format("%.2f", orderInfo.getTotal())%></span>
+                        <span><%=String.format("%.2f", orderInfo.getTotal())%> VND</span>
                     </div>
                 </div>
             </div>

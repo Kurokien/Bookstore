@@ -419,7 +419,7 @@
                         </div>
                         
                         <div class="item-price">
-                            <span class="price">$<%=String.format("%.2f", itemTotal)%></span>
+                            <span class="price"><%=String.format("%.2f", itemTotal)%> VND</span>
                         </div>
                     </div>
                     <%}%>
@@ -428,7 +428,7 @@
                     <div class="order-total">
                         <div class="total-line">
                             <span>Subtotal:</span>
-                            <span>$<%=String.format("%.2f", cart.totalCart())%></span>
+                            <span><%=String.format("%.2f", cart.totalCart())%> VND</span>
                         </div>
                         <div class="total-line">
                             <span>Shipping:</span>
@@ -436,11 +436,11 @@
                         </div>
                         <div class="total-line">
                             <span>Tax:</span>
-                            <span>$0.00</span>
+                            <span>0.00 VND</span>
                         </div>
                         <div class="total-line final">
                             <span>Total:</span>
-                            <span>$<%=String.format("%.2f", cart.totalCart())%></span>
+                            <span><%=String.format("%.2f", cart.totalCart())%> VND</span>
                         </div>
                     </div>
                     
