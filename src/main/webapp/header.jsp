@@ -85,7 +85,7 @@
                                                 <div class="alert-close"> </div> 
                                                 <div class="list_img"><img src="<%=list.getValue().getProduct().getProductImage()%>" class="img-responsive" alt=""></div>
                                                 <div class="list_desc"><h4><a href="CartServlet?command=remove&productID=<%=list.getValue().getProduct().getProductID()%>"><%=list.getValue().getProduct().getProductName()%></a></h4>
-                                                    <%=list.getValue().getQuantity()%> x<span class="actual"> $<%=list.getValue().getProduct().getProductPrice()%></span>
+                                                    <%=list.getValue().getQuantity()%> x<span class="actual"> <%=list.getValue().getProduct().getProductPrice()%> VND</span>
                                                 </div>
                                                 <div class="clearfix"></div>
                                             </div>
@@ -95,7 +95,7 @@
                                     </div>
                                     <div class="total">
                                         <div class="total_left">Cart Subtotal: </div>
-                                        <div class="total_right">$<%=cart.totalCart()%></div>
+                                        <div class="total_right"><%=cart.totalCart()%> VND</div>
                                         <div class="clearfix"> </div>
                                     </div>
                                     <div class="login_buttons">
