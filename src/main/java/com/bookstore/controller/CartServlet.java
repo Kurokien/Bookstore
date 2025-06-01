@@ -3,14 +3,15 @@ package com.bookstore.controller;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.json.JSONObject;
+
 import com.bookstore.dao.ProductDAO;
 import com.bookstore.model.Cart;
 import com.bookstore.model.Item;
 import com.bookstore.model.Product;
 
-import org.json.JSONObject;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,9 +19,9 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "CartServlet", urlPatterns = {"/CartServlet"})
 public class CartServlet extends HttpServlet {
-    
+
     private final ProductDAO productDAO = new ProductDAO();
-    
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {

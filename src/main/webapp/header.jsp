@@ -56,7 +56,8 @@
                         <ul class="icon1 sub-icon1">
                             <%if (users != null) {%>
                             <li>
-                                <a title="<%=users.getUserEmail()%>" style="color: #007cba; font-weight: bold;">
+                                <a href="<%= request.getContextPath()%>/users?command=edit"
+                                   title="<%=users.getUserEmail()%>" style="color: #007cba; font-weight: bold;">
                                     <%if (users.getUserFullname() != null && !users.getUserFullname().trim().isEmpty()) {%>
                                         👋 Hi, <%=users.getFirstName()%>!
                                     <%} else {%>

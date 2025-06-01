@@ -7,7 +7,7 @@
     <display-name>BookStore Web Application</display-name>
     
     <!-- Servlet Mappings -->
-     <servlet>
+    <servlet>
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>com.bookstore.controller.LoginServlet</servlet-class>
     </servlet>

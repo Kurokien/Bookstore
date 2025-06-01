@@ -54,6 +54,19 @@ public class Users {
         this.userRole = false; // Default to customer
     }
 
+    /**
+     * Constructor for edit (userRole = false by default)
+     */
+    public Users(String userEmail, String userFullname, String userPhone,
+                 String userAddress, String userCountry) {
+        this.userEmail = userEmail;
+        this.userFullname = userFullname;
+        this.userPhone = userPhone;
+        this.userAddress = userAddress;
+        this.userCountry = userCountry;
+        this.userRole = false; // Default to customer
+    }
+
     // ==================== GETTERS & SETTERS ====================
 
     public long getUserID() {
