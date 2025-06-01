@@ -29,6 +29,8 @@ public class UsersServlet extends HttpServlet {
         
         if ("logout".equals(command)) {
             handleLogout(request, response);
+        } else if ("edit".equals(command)) {
+            handleEdit(request, response);
         } else {
             // Default redirect to home
             response.sendRedirect(request.getContextPath() + "/index.jsp");
@@ -52,6 +54,8 @@ public class UsersServlet extends HttpServlet {
                 handleRegistration(request, response);
             } else if ("login".equals(command)) {
                 handleLogin(request, response);
+            } else if ("edit".equals(command)) {
+                handleEdit(request, response);
             } else {
                 // Unknown command
                 response.sendRedirect(request.getContextPath() + "/index.jsp");
@@ -279,7 +283,79 @@ public class UsersServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/index.jsp?message=" + 
                             java.net.URLEncoder.encode("You have been logged out successfully.", "UTF-8"));
     }
-    
+
+    /**
+     * Handle user edit
+     */
+
+    private void handleEdit(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String email = request.getParameter("email");
+        String method = request.getMethod();
+
+        System.out.println("Edit user: " + email);
+
+        try {
+            Users existedUser = usersDAO.getUserByEmail(email);
+
+            if (existedUser != null) {
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
+            }
+
+            if ("GET".equalsIgnoreCase(method)) {
+                response.sendRedirect(request.getContextPath() + "/edit.jsp");
+            }
+
+            String fullname = request.getParameter("fullname");
+            String phone = request.getParameter("phone");
+            String address = request.getParameter("address");
+            String country = request.getParameter("country");
+
+            // Validation
+            StringBuilder errors = new StringBuilder();
+
+            if (email == null || email.trim().isEmpty()) {
+                errors.append("Email is required. ");
+            }
+
+            if (fullname == null || fullname.trim().isEmpty()) {
+                errors.append("Full name is required. ");
+            }
+
+            if (phone != null && !phone.trim().isEmpty()) {
+                if (!phone.matches("^[\\+]?[0-9\\s\\-\\(\\)]{10,20}$")) {
+                    errors.append("Invalid phone number format. ");
+                }
+            }
+
+            // If there are validation errors, redirect back to edit page
+            if (errors.length() > 0) {
+                System.out.println("Edit validation errors: " + errors.toString());
+                response.sendRedirect(request.getContextPath() + "/edit.jsp?error=" +
+                        java.net.URLEncoder.encode(errors.toString().trim(), "UTF-8"));
+            }
+
+            Users updateUser = new Users(email, fullname, phone, address, country);
+            updateUser.setUserID(existedUser.getUserID());
+
+            if (usersDAO.updateUserProfile(updateUser)) {
+                HttpSession session = request.getSession();
+                session.setAttribute("user", updateUser);
+
+                System.out.println("User updated successfully: " + email);
+                response.sendRedirect(request.getContextPath() + "/edit.jsp?success=" +
+                        java.net.URLEncoder.encode("Profile updated successfully.", "UTF-8"));
+            } else {
+                System.out.println("User update failed: " + email);
+                response.sendRedirect(request.getContextPath() + "/edit.jsp?error=" +
+                        java.net.URLEncoder.encode("Failed to update profile. Please try again.", "UTF-8"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Get servlet info
      */
