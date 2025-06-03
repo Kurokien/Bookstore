@@ -1,0 +1,26 @@
+cat > .dockerignore << 'EOF'
+# Ignore Maven build artifacts
+target/
+*.jar
+*.war
+*.ear
+
+# Ignore IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Ignore local configuration files
+*.local
+*.env
+
+# Ignore Docker-related files
+Dockerfile
+.dockerignore
+EOF
